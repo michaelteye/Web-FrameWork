@@ -1,9 +1,25 @@
 import { User } from "./models/User";
 
-const user = new User({ id:1 });
+const user = new User({name:'new record', age:0 });
 
-// user.set({ name: 'Mike', age:200 });
+// class Person{
+//     constructor(public firstName: string, public lastName: string){}
 
-user.events.on('change',()=>{
-    console.log('change');
+//     get fullName():string{
+//         return `${this.firstName} ${this.lastName}`
+//     }
+// }
+
+// const person = new Person('Michael','Teye')
+// console.log(person.fullName)
+
+
+console.log(user.get('name'))
+
+user.on('change',()=>{
+    console.log('change was made on users..');
 })
+
+user.trigger('change')
+
+// main=> fetch=>generics
