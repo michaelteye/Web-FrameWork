@@ -1,25 +1,11 @@
-import { User } from "./models/User";
+import { User } from './models/User';
 
-const user = new User({name:'new record', age:0 });
+const user = new User({ id: 1, name: 'newer name', age: 0 });
 
-// class Person{
-//     constructor(public firstName: string, public lastName: string){}
+user.on('save', () => {
+  console.log(user);
+});
 
-//     get fullName():string{
-//         return `${this.firstName} ${this.lastName}`
-//     }
-// }
+user.save();
 
-// const person = new Person('Michael','Teye')
-// console.log(person.fullName)
-
-
-console.log(user.get('name'))
-
-user.on('change',()=>{
-    console.log('change was made on users..');
-})
-
-user.trigger('change')
-
-// main=> fetch=>generics
+// main=>generics=>fetch=>settingTriggers
