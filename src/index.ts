@@ -8,4 +8,4 @@ user.on('save', () => {
 
 user.fetch();
 
-// main=>generics=>fetch=>settingTriggers
+// main=>generics=>fetch=>settingTriggers=ShortenedMethod

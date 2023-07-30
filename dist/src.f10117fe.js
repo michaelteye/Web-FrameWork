@@ -5621,7 +5621,7 @@ user.on('save', function () {
   console.log(user);
 });
 user.fetch();
-// main=>generics=>fetch=>settingTriggers
+// main=>generics=>fetch=>settingTriggers=ShortenedMethod
 },{"./models/User":"src/models/User.ts"}],"../../../../.nvm/versions/node/v16.17.0/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
