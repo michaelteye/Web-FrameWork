@@ -126,22 +126,23 @@ Object.defineProperty(exports, "__esModule", {
 exports.Eventing = void 0;
 var Eventing = /** @class */function () {
   function Eventing() {
+    var _this = this;
     this.events = {};
+    this.on = function (eventName, callback) {
+      var handlers = _this.events[eventName] || [];
+      handlers.push(callback);
+      _this.events[eventName] = handlers;
+    };
+    this.trigger = function (eventName) {
+      var handlers = _this.events[eventName];
+      if (!handlers || handlers.length === 0) {
+        return;
+      }
+      handlers.forEach(function (callback) {
+        callback();
+      });
+    };
   }
-  Eventing.prototype.on = function (eventName, callback) {
-    var handler = this.events[eventName] || [];
-    handler.push(callback);
-    this.events[eventName] = handler;
-  };
-  Eventing.prototype.trigger = function (eventName) {
-    var handlers = this.events[eventName];
-    if (!handlers || handlers.length === 0) {
-      return;
-    }
-    handlers.forEach(function (callback) {
-      callback();
-    });
-  };
   return Eventing;
 }();
 exports.Eventing = Eventing;
@@ -5449,15 +5450,9 @@ exports.isCancel = isCancel;
 exports.CanceledError = CanceledError;
 exports.AxiosError = AxiosError;
 exports.Axios = Axios;
-},{"./lib/axios.js":"node_modules/axios/lib/axios.js"}],"src/models/Sync.ts":[function(require,module,exports) {
+},{"./lib/axios.js":"node_modules/axios/lib/axios.js"}],"src/models/ApiSync.ts":[function(require,module,exports) {
 "use strict";
 
-function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
-function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
-function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
 var __importDefault = this && this.__importDefault || function (mod) {
   return mod && mod.__esModule ? mod : {
     "default": mod
@@ -5466,36 +5461,26 @@ var __importDefault = this && this.__importDefault || function (mod) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.Sync = void 0;
+exports.ApiSync = void 0;
 var axios_1 = __importDefault(require("axios"));
-var Sync = /*#__PURE__*/function () {
-  function Sync(rootUrl) {
-    _classCallCheck(this, Sync);
+var ApiSync = /** @class */function () {
+  function ApiSync(rootUrl) {
     this.rootUrl = rootUrl;
   }
-  _createClass(Sync, [{
-    key: "fetch",
-    value: function fetch(id) {
-      // axios.get(`${this.rootUrl}/${id}`).then(
-      //     (response:AxiosResponse):void=>{
-      //     this.set(response.data)
-      // })
-      return axios_1.default.get("".concat(this.rootUrl, "/").concat(id));
+  ApiSync.prototype.fetch = function (id) {
+    return axios_1.default.get("".concat(this.rootUrl, "/").concat(id));
+  };
+  ApiSync.prototype.save = function (data) {
+    var id = data.id;
+    if (id) {
+      return axios_1.default.put("".concat(this.rootUrl, "/").concat(id), data);
+    } else {
+      return axios_1.default.post(this.rootUrl, data);
     }
-  }, {
-    key: "save",
-    value: function save(data) {
-      var id = data.id;
-      if (id) {
-        axios_1.default.put("".concat(this.rootUrl, "/").concat(id), data);
-      } else {
-        axios_1.default.post("".concat(this.rootUrl), data);
-      }
-    }
-  }]);
-  return Sync;
+  };
+  return ApiSync;
 }();
-exports.Sync = Sync;
+exports.ApiSync = ApiSync;
 },{"axios":"node_modules/axios/index.js"}],"src/models/User.ts":[function(require,module,exports) {
 "use strict";
 
@@ -5504,19 +5489,19 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.User = void 0;
 var Eventing_1 = require("./Eventing");
-var Sync_1 = require("./Sync");
+var ApiSync_1 = require("./ApiSync");
 var rootUrl = "http://localhost:3000/users";
 //function that returns nothing
 var User = /** @class */function () {
   function User(data) {
     this.data = data;
     this.events = new Eventing_1.Eventing();
-    this.sync = new Sync_1.Sync(rootUrl);
+    this.sync = new ApiSync_1.ApiSync(rootUrl);
   }
   return User;
 }();
 exports.User = User;
-},{"./Eventing":"src/models/Eventing.ts","./Sync":"src/models/Sync.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./Eventing":"src/models/Eventing.ts","./ApiSync":"src/models/ApiSync.ts"}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5555,7 +5540,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58973" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "63528" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
